@@ -1,0 +1,75 @@
+enabled: false
+
+replicaCount: 3
+
+image:
+  repository: registry.wenex.org/landau/lnd-frontend
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+fullnameOverride: "lnd-frontend"
+
+serviceAccount:
+  create: true
+  automount: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3005
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+environments:
+  nuxt:
+    # *****************************
+    # Logging Services
+    # *****************************
+    sentry:
+      url: ""
+      authToken: ""
+    # *****************************
+    # Public Information
+    # *****************************
+    public:
+      apiBaseUrl: "https://api.landau.ir"
+      platformApiBaseUrl: "https://gateway.wenex.org"
+      # *****************************
+      # Push Information
+      # *****************************
+      vapidPublicKey: ""
+      # *****************************
+      # Security Services
+      # *****************************
+      altcha:
+        challengeUrl: "https://api.landau.ir/challenge"
+      # *****************************
+      # Client Information
+      # *****************************
+      appId: ""
+      clientId: ""
+      # MQTT Over WebSocket
+      mqttWsUrl: "wss://emqx.wenex.org/mqtt"
+      # *****************************
+      # Logging Services
+      # *****************************
+      sentry:
+        dsn: ""
+        tracesSampleRate: "0.8"
+      # *****************************
+      # OAuth Information
+      # *****************************
+      # Google
+      google:
+        client:
+          id: ""
+          scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
+          redirectUri: "https://landau.ir/oauth"
+      # *****************************
+      # OSM Services
+      # *****************************
+      mapTileServerPath: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -1,0 +1,20 @@
+enabled: false
+
+replicaCount: 3
+
+fullnameOverride: "lnd-assets"
+
+serviceAccount:
+  create: true
+  automount: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8088
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
