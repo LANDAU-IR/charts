@@ -1,0 +1,63 @@
+enabled: false
+
+replicaCount: 3
+
+image:
+  repository: registry.wenex.org/w3x/phc-landing
+  pullPolicy: IfNotPresent
+  tag: "1.0.0"
+
+fullnameOverride: "phc-landing"
+
+serviceAccount:
+  create: true
+  automount: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
+environments:
+  nuxt:
+    # *****************************
+    # Logging Services
+    # *****************************
+    sentry:
+      url: ""
+      authToken: ""
+    # *****************************
+    # Public Information
+    # *****************************
+    public:
+      apiBaseUrl: "https://api.phc.w3x.app"
+      # *****************************
+      # Site Information
+      # *****************************
+      panelUrl: "https://panel.phc.w3x.app"
+      # *****************************
+      # Security Services
+      # *****************************
+      altcha:
+        challengeUrl: "https://api.phc.w3x.app/challenge"
+      # *****************************
+      # Client Information
+      # *****************************
+      appId: ""
+      clientId: ""
+      # *****************************
+      # Logging Services
+      # *****************************
+      sentry:
+        dsn: ""
+        tracesSampleRate: "0.8"
+      # *****************************
+      # OSM Services
+      # *****************************
+      mapTileServerPath: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "workers.fullname" . }}
+  labels:
+    {{- include "workers.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - name: {{ .Values.service.name | default "http" | quote }}
+      port: {{ .Values.service.port | default 80 | int }}
+      targetPort: {{ .Values.global.configuration.workers.api | default 80 | int }}
+      protocol: {{ .Values.service.protocol | default "TCP" | quote | upper }}
+  selector:
+    {{- include "workers.selectorLabels" . | nindent 4 }}
