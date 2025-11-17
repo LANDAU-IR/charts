@@ -9,7 +9,7 @@ serviceAccount:
 service:
   type: ClusterIP
   port: 80
-  targetPort: 6050
+  targetPort: 6150
 
 livenessProbe:
   httpGet:
