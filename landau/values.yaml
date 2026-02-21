@@ -74,6 +74,19 @@ global:
       pass: ""
       from: ""
     # **********************
+    # IPG Config
+    # **********************
+    zarinpal:
+      url: "https://payment.zarinpal.com/pg/v4"
+      merchantId: ""
+      callbackUrl: "https://dev.landau.ir/financial/verify"
+      redirectUrl: "https://payment.zarinpal.com/pg/StartPay/{}"
+    # **********************
+    # Landau Config
+    # **********************
+    landau:
+      userId: "68fc7a3dbe2e2c2d7fa9d055"
+    # **********************
     # Client Config
     # **********************
     strictToken: true

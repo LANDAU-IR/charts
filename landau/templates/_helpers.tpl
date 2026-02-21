@@ -137,6 +137,26 @@ Create the environments variable
   value: {{ .Values.global.environments.melipayamak.pass | quote }}
 - name: MELIPAYAMAK_FROM
   value: {{ .Values.global.environments.melipayamak.from | quote }}
+{{- if .Values.global.environments.zarinpal }}
+# **********************
+# IPG Config
+# **********************
+- name: ZARINPAL_URL
+  value: {{ .Values.global.environments.zarinpal.url | default "https://payment.zarinpal.com/pg/v4" | quote }}
+- name: ZARINPAL_MERCHANT_ID
+  value: {{ .Values.global.environments.zarinpal.merchantId | quote }}
+- name: ZARINPAL_CALLBACK_URL
+  value: {{ .Values.global.environments.zarinpal.callbackUrl | quote }}
+- name: ZARINPAL_REDIRECT_URL
+  value: {{ .Values.global.environments.zarinpal.redirectUrl | default "https://payment.zarinpal.com/pg/StartPay/{}" | quote }}
+{{- end }}
+# **********************
+# Landau Config
+# **********************
+{{- if .Values.global.environments.landau }}
+- name: LANDAU_USER_ID
+  value: {{ .Values.global.environments.landau.userId | quote }}
+{{- end }}
 # *****************************
 # Client Config
 # *****************************
