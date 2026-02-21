@@ -142,13 +142,13 @@ Create the environments variable
 # IPG Config
 # **********************
 - name: ZARINPAL_URL
-  value: {{ .Values.global.environments.zarinpal.url | default "https://payment.zarinpal.com/pg/v4" | quote }}
+  value: {{ .Values.global.environments.zarinpal.url | quote }}
 - name: ZARINPAL_MERCHANT_ID
   value: {{ .Values.global.environments.zarinpal.merchantId | quote }}
 - name: ZARINPAL_CALLBACK_URL
   value: {{ .Values.global.environments.zarinpal.callbackUrl | quote }}
 - name: ZARINPAL_REDIRECT_URL
-  value: {{ .Values.global.environments.zarinpal.redirectUrl | default "https://payment.zarinpal.com/pg/StartPay/{}" | quote }}
+  value: {{ .Values.global.environments.zarinpal.redirectUrl | quote }}
 {{- end }}
 # **********************
 # Landau Config
