@@ -3,7 +3,35 @@ entries:
   landau:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-21T18:08:08.646864652+03:30"
+    created: "2026-02-22T14:29:40.375098198+03:30"
+    dependencies:
+    - condition: services.enabled
+      name: services
+      repository: file://charts/services
+      version: 1.0.0
+    - condition: workers.enabled
+      name: workers
+      repository: file://charts/workers
+      version: 1.0.0
+    - condition: assets.enabled
+      name: assets
+      repository: file://charts/assets
+      version: 1.0.0
+    - condition: frontend.enabled
+      name: frontend
+      repository: file://charts/frontend
+      version: 1.0.1
+    description: A Helm chart for Kubernetes
+    digest: a358c41ad268b96fa3ef1c970caa6406e488c10ee4ed305a385ff9d973d59fb1
+    icon: https://avatars.githubusercontent.com/u/207422183?s=200&v=4
+    name: landau
+    type: application
+    urls:
+    - landau-1.0.4.tgz
+    version: 1.0.4
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-02-22T14:29:40.373285569+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -31,7 +59,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-21T18:08:08.644985712+03:30"
+    created: "2026-02-22T14:29:40.371459293+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -59,7 +87,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-21T18:08:08.643131887+03:30"
+    created: "2026-02-22T14:29:40.369559485+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -87,7 +115,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-21T18:08:08.640288643+03:30"
+    created: "2026-02-22T14:29:40.366799753+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -113,4 +141,4 @@ entries:
     urls:
     - landau-1.0.0.tgz
     version: 1.0.0
-generated: "2026-02-21T18:08:08.637888051+03:30"
+generated: "2026-02-22T14:29:40.364736357+03:30"

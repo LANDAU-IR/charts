@@ -77,10 +77,10 @@ global:
     # IPG Config
     # **********************
     zarinpal:
-      url: "https://payment.zarinpal.com/pg/v4"
-      merchantId: ""
+      url: "https://sandbox.zarinpal.com/pg/v4"
+      merchantId: "514344e5-ef3c-4489-88f6-fde938292d18"
       callbackUrl: "https://dev.landau.ir/financial/verify"
-      redirectUrl: "https://payment.zarinpal.com/pg/StartPay/{}"
+      redirectUrl: "https://sandbox.zarinpal.com/pg/StartPay/{}"
     # **********************
     # Landau Config
     # **********************
