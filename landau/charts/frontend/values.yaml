@@ -38,6 +38,9 @@ environments:
     public:
       apiBaseUrl: "https://api.landau.ir"
       platformApiBaseUrl: "https://gateway.wenex.org"
+      # Landau's tenant domain, sent with every token request. Platform subjects are
+      # domain-scoped, and a request without it is rejected with `invalid subjects`.
+      authDomain: "landau.ir"
       # *****************************
       # Push Information
       # *****************************
@@ -54,6 +57,27 @@ environments:
       clientId: ""
       # MQTT Over WebSocket
       mqttWsUrl: "wss://emqx.wenex.org/mqtt"
+      # *****************************
+      # Feature Flags
+      # *****************************
+      pos:
+        # Whether the in-shop POS confirm button is offered. **Must match the backend's
+        # `global.environments.order.posEnabled`**: this side only decides whether the button
+        # appears, and the backend still refuses a settle with 501 when the two disagree — so
+        # `false` here against a POS-enabled backend hides the whole surface with nothing on
+        # screen to explain why.
+        enabled: true
+        # Where the card reader answers, and without it the button above cannot settle anything:
+        # a settle must carry the acquirer's own reference, which only a real `purchase` on the
+        # bridge produces, so with this empty the screen short-circuits to `unreachable` before
+        # it tries.
+        #
+        # It is the **shop PC's own loopback**, not a cluster address — the reader sits beside the
+        # counter while the backend runs on a server, which is the whole reason the swipe is
+        # separated from the money. The port is the bridge's, identical on every till, so one
+        # value serves every shop. Empty it only where no terminal is placed, and then set
+        # `enabled: false` too.
+        bridgeUrl: "http://127.0.0.1:4373"
       # *****************************
       # Logging Services
       # *****************************
