@@ -46,6 +46,22 @@ global:
     aes: "" # default: random 64 chars
     altcha:
       hmacKey: "" # default: random 64 chars
+    # The HMAC key the PSP callback's own signature is checked against. ZarinPal signs nothing on
+    # the way back, so this is the only thing that tells a genuine return from a typed one, and the
+    # backend refuses to boot on the placeholders the repository ships.
+    psp:
+      secret: "" # default: random 64 chars
+    # Web-push keypair. Deliberately **not** generated: a random string is not a valid VAPID key,
+    # and the backend's own fallback pair is committed, hence public. Mint one with
+    # `npx web-push generate-vapid-keys` and set both halves — the public one under
+    # `global.environments.vapid.publicKey`, which the frontend chart needs too. Left empty, the
+    # backend keeps its public dev pair.
+    vapid:
+      privateKey: ""
+    # Only read by `pnpm platform:seed`, run by hand against a pod; the running apps never see it.
+    # Empty leaves the seed's own `admin`.
+    init:
+      adminPassword: ""
   # **********************
   # Environment Variables
   # **********************
@@ -76,16 +92,93 @@ global:
     # **********************
     # IPG Config
     # **********************
+    # The defaults below are ZarinPal's **sandbox**. A deployment that means to take real money
+    # names the production `url` and `redirectUrl` explicitly and carries its own `merchantId`.
     zarinpal:
       url: "https://sandbox.zarinpal.com/pg/v4"
       merchantId: "514344e5-ef3c-4489-88f6-fde938292d18"
-      callbackUrl: "https://dev.landau.ir/financial/verify"
+      # A fallback the backend never reads today — `psp.callbackUrl` below is what the adapter is
+      # handed per attempt. Kept in step with it on purpose: a value that disagreed would only be
+      # here to mislead the next operator.
+      callbackUrl: "https://api.landau.ir/shopping/payments/callback"
       redirectUrl: "https://sandbox.zarinpal.com/pg/StartPay/{}"
+      timeoutMs: "20000"
+    # **********************
+    # PSP Config
+    # **********************
+    # Which adapter answers, and where money comes back to. `zarinpal` is the real one; `dev` is the
+    # built-in fake, and selecting it also takes `allowFake: true` so it cannot be reached by
+    # omission — the fake verifies Landau's own payments with no bank in the loop. An unknown name
+    # refuses to boot rather than falling back.
+    psp:
+      provider: "zarinpal"
+      allowFake: false
+      # Only for a provider that is not ZarinPal, which reads `zarinpal.merchantId` above. Empty
+      # leaves the backend's own default.
+      merchantId: ""
+      # Landau's own public callback route, on the gateway — not the frontend's. The wholesale
+      # callback is derived from this one's origin, so there is nothing else to keep in step.
+      callbackUrl: "https://api.landau.ir/shopping/payments/callback"
+      # How long the payer has at the provider before the saga reaps the attempt, in seconds.
+      timeoutSeconds: "900"
     # **********************
     # Landau Config
     # **********************
     landau:
       userId: "68fc7a3dbe2e2c2d7fa9d055"
+    # **********************
+    # Order Config
+    # **********************
+    order:
+      # How long a shop has to answer a paid order before it is auto-rejected and refunded.
+      autoRejectHours: "48"
+      # How long after delivery a buyer may still raise a dispute.
+      disputeWindowDays: "7"
+      # A shop's order against its own stock confirms itself; `false` restores the manual step.
+      selfSupplyAutoConfirm: true
+      # The in-shop card terminal. **Must match `frontend.environments.nuxt.public.posEnabled`**:
+      # this side decides whether a settle is accepted at all, and with the two disagreeing the
+      # backend answers 501 to a button the browser has already offered. A deployment that places
+      # no terminals says so here *and* there.
+      posEnabled: true
+      # How much settled-but-unreconciled POS money one shop may carry before further settles are
+      # refused, in the smallest currency unit.
+      posUnreconciledCeiling: "5000000000"
+    # **********************
+    # Dispatch Config
+    # **********************
+    dispatch:
+      # How far from a pickup a courier may be and still be offered the job.
+      radiusKm: "50"
+      # The extra radius an oversize consignment is searched over.
+      oversizeKm: "4"
+      # Great-circle kilometres are multiplied by this to price a real road route.
+      detourFactor: "1.4"
+      # How long one offer wave stands before the next widens.
+      waveMinutes: "10"
+      # After this long with no ping a courier's position stops counting as live.
+      positionTtlMinutes: "30"
+      routingCosting: "auto"
+      routingPool: "24"
+      # What a consignment is assumed to be when the shop declares nothing.
+      default:
+        weightKg: "5"
+        widthCm: "30"
+        heightCm: "30"
+        lengthCm: "30"
+    # **********************
+    # Operations Config
+    # **********************
+    # The sweep that drives offer waves and auto-rejects, and the lock that keeps one replica on it.
+    operations:
+      tickSeconds: "60"
+      lockSeconds: "300"
+    # **********************
+    # Wholesale Config
+    # **********************
+    # Payment terms for a distributor who has never declared its own.
+    wholesale:
+      restockTermsDays: "30"
     # **********************
     # Client Config
     # **********************
@@ -109,6 +202,26 @@ global:
     frontend:
       baseUrl: "https://landau.ir"
       assetsUrl: "https://assets.landau.ir"
+    # **********************
+    # Captcha Services
+    # **********************
+    # Altcha — the proof-of-work ceiling. Its HMAC key is a secret: `global.secrets.altcha.hmacKey`.
+    altcha:
+      maxNumber: "100000"
+    # **********************
+    # Push Information
+    # **********************
+    # VAPID — the public half only, and the same value the frontend chart serves to the browser.
+    # The private half is a secret: `global.secrets.vapid.privateKey`. Set both or neither.
+    vapid:
+      publicKey: ""
+    # **********************
+    # Mail Identities
+    # **********************
+    # Empty keeps the backend's own `Landau <no-reply@$ROOT_DOMAIN>` and `support@$ROOT_DOMAIN`.
+    mail:
+      noReply: ""
+      support: ""
     # **********************
     # Logging Services
     # **********************

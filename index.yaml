@@ -3,7 +3,35 @@ entries:
   landau:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-22T14:29:40.375098198+03:30"
+    created: "2026-08-29T15:43:14.41495698+03:30"
+    dependencies:
+    - condition: services.enabled
+      name: services
+      repository: file://charts/services
+      version: 1.0.0
+    - condition: workers.enabled
+      name: workers
+      repository: file://charts/workers
+      version: 1.0.0
+    - condition: assets.enabled
+      name: assets
+      repository: file://charts/assets
+      version: 1.0.0
+    - condition: frontend.enabled
+      name: frontend
+      repository: file://charts/frontend
+      version: 1.0.2
+    description: A Helm chart for Kubernetes
+    digest: f386800cb7d87ac42d536defd0283f383ded06e85a5291345e8730187c2c16cf
+    icon: https://avatars.githubusercontent.com/u/207422183?s=200&v=4
+    name: landau
+    type: application
+    urls:
+    - landau-1.0.5.tgz
+    version: 1.0.5
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-08-29T15:43:14.413228867+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -31,7 +59,7 @@ entries:
     version: 1.0.4
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-22T14:29:40.373285569+03:30"
+    created: "2026-08-29T15:43:14.412279377+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -59,7 +87,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-22T14:29:40.371459293+03:30"
+    created: "2026-08-29T15:43:14.41128723+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -87,7 +115,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-22T14:29:40.369559485+03:30"
+    created: "2026-08-29T15:43:14.410309363+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -115,7 +143,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-02-22T14:29:40.366799753+03:30"
+    created: "2026-08-29T15:43:14.409264319+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -141,4 +169,4 @@ entries:
     urls:
     - landau-1.0.0.tgz
     version: 1.0.0
-generated: "2026-02-22T14:29:40.364736357+03:30"
+generated: "2026-08-29T15:43:14.407926555+03:30"

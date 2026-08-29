@@ -74,6 +74,8 @@ Create the environments variable
   value: {{ .Values.environments.nuxt.public.apiBaseUrl | quote }}
 - name: NUXT_PUBLIC_PLATFORM_API_BASE_URL
   value: {{ .Values.environments.nuxt.public.platformApiBaseUrl | quote }}
+- name: NUXT_PUBLIC_AUTH_DOMAIN
+  value: {{ .Values.environments.nuxt.public.authDomain | default "landau.ir" | quote }}
 # *****************************
 # Push Information
 # *****************************
@@ -94,6 +96,16 @@ Create the environments variable
 # MQTT Over WebSocket
 - name: NUXT_PUBLIC_MQTT_WS_URL
   value: {{ .Values.environments.nuxt.public.mqttWsUrl | default "ws://emqx.wenex.org/mqtt" | quote }}
+{{- with .Values.environments.nuxt.public.pos }}
+# *****************************
+# Feature Flags
+# *****************************
+# Must agree with the backend's ORDER_POS_ENABLED, or a button is offered and then refused.
+- name: NUXT_PUBLIC_POS_ENABLED
+  value: {{ .enabled | quote }}
+- name: NUXT_PUBLIC_POS_BRIDGE_URL
+  value: {{ .bridgeUrl | quote }}
+{{- end }}
 # *****************************
 # Logging Services
 # *****************************

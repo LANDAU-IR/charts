@@ -94,6 +94,39 @@ Create the secrets variable
     secretKeyRef:
       name: lnd-secrets
       key: HMAC_KEY
+# **********************
+# PSP (payment provider)
+# **********************
+- name: PSP_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: lnd-secrets
+      key: PSP_SECRET
+{{- with .Values.global.secrets.vapid }}
+{{- if .privateKey }}
+# **********************
+# Push Information
+# **********************
+# VAPID
+- name: VAPID_PRIVATE_KEY
+  valueFrom:
+    secretKeyRef:
+      name: lnd-secrets
+      key: VAPID_PRIVATE_KEY
+{{- end }}
+{{- end }}
+{{- with .Values.global.secrets.init }}
+{{- if .adminPassword }}
+# **********************
+# Seed Credentials
+# **********************
+- name: INIT_LND_ADMIN_PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: lnd-secrets
+      key: INIT_LND_ADMIN_PASSWORD
+{{- end }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -149,6 +182,25 @@ Create the environments variable
   value: {{ .Values.global.environments.zarinpal.callbackUrl | quote }}
 - name: ZARINPAL_REDIRECT_URL
   value: {{ .Values.global.environments.zarinpal.redirectUrl | quote }}
+- name: ZARINPAL_TIMEOUT_MS
+  value: {{ .Values.global.environments.zarinpal.timeoutMs | default "20000" | quote }}
+{{- end }}
+{{- if .Values.global.environments.psp }}
+# **********************
+# PSP (payment provider)
+# **********************
+- name: PSP_PROVIDER
+  value: {{ .Values.global.environments.psp.provider | default "zarinpal" | quote }}
+- name: PSP_ALLOW_FAKE
+  value: {{ .Values.global.environments.psp.allowFake | quote }}
+{{- with .Values.global.environments.psp.merchantId }}
+- name: PSP_MERCHANT_ID
+  value: {{ . | quote }}
+{{- end }}
+- name: PSP_CALLBACK_URL
+  value: {{ .Values.global.environments.psp.callbackUrl | quote }}
+- name: PSP_TIMEOUT_SECONDS
+  value: {{ .Values.global.environments.psp.timeoutSeconds | default "900" | quote }}
 {{- end }}
 # **********************
 # Landau Config
@@ -157,11 +209,74 @@ Create the environments variable
 - name: LANDAU_USER_ID
   value: {{ .Values.global.environments.landau.userId | quote }}
 {{- end }}
+{{- if .Values.global.environments.order }}
+# **********************
+# Order Config
+# **********************
+- name: ORDER_AUTO_REJECT_HOURS
+  value: {{ .Values.global.environments.order.autoRejectHours | default "48" | quote }}
+- name: ORDER_DISPUTE_WINDOW_DAYS
+  value: {{ .Values.global.environments.order.disputeWindowDays | default "7" | quote }}
+- name: ORDER_SELF_SUPPLY_AUTO_CONFIRM
+  value: {{ .Values.global.environments.order.selfSupplyAutoConfirm | quote }}
+# Must agree with the frontend's NUXT_PUBLIC_POS_ENABLED, or a button is offered and refused.
+- name: ORDER_POS_ENABLED
+  value: {{ .Values.global.environments.order.posEnabled | quote }}
+- name: ORDER_POS_UNRECONCILED_CEILING
+  value: {{ .Values.global.environments.order.posUnreconciledCeiling | default "5000000000" | quote }}
+{{- end }}
+{{- if .Values.global.environments.dispatch }}
+# **********************
+# Dispatch Config
+# **********************
+- name: DISPATCH_RADIUS_KM
+  value: {{ .Values.global.environments.dispatch.radiusKm | default "50" | quote }}
+- name: DISPATCH_OVERSIZE_KM
+  value: {{ .Values.global.environments.dispatch.oversizeKm | default "4" | quote }}
+- name: DISPATCH_DETOUR_FACTOR
+  value: {{ .Values.global.environments.dispatch.detourFactor | default "1.4" | quote }}
+- name: DISPATCH_WAVE_MINUTES
+  value: {{ .Values.global.environments.dispatch.waveMinutes | quote }}
+- name: DISPATCH_POSITION_TTL_MINUTES
+  value: {{ .Values.global.environments.dispatch.positionTtlMinutes | default "30" | quote }}
+- name: DISPATCH_ROUTING_COSTING
+  value: {{ .Values.global.environments.dispatch.routingCosting | default "auto" | quote }}
+- name: DISPATCH_ROUTING_POOL
+  value: {{ .Values.global.environments.dispatch.routingPool | default "24" | quote }}
+{{- with .Values.global.environments.dispatch.default }}
+- name: DISPATCH_DEFAULT_WEIGHT_KG
+  value: {{ .weightKg | default "5" | quote }}
+- name: DISPATCH_DEFAULT_WIDTH_CM
+  value: {{ .widthCm | default "30" | quote }}
+- name: DISPATCH_DEFAULT_HEIGHT_CM
+  value: {{ .heightCm | default "30" | quote }}
+- name: DISPATCH_DEFAULT_LENGTH_CM
+  value: {{ .lengthCm | default "30" | quote }}
+{{- end }}
+{{- end }}
+{{- if .Values.global.environments.operations }}
+# **********************
+# Operations Config
+# **********************
+- name: OPERATIONS_TICK_SECONDS
+  value: {{ .Values.global.environments.operations.tickSeconds | default "60" | quote }}
+- name: OPERATIONS_LOCK_SECONDS
+  value: {{ .Values.global.environments.operations.lockSeconds | default "300" | quote }}
+{{- end }}
+{{- if .Values.global.environments.wholesale }}
+# **********************
+# Wholesale Config
+# **********************
+- name: RESTOCK_TERMS_DAYS
+  value: {{ .Values.global.environments.wholesale.restockTermsDays | default "30" | quote }}
+{{- end }}
 # *****************************
 # Client Config
 # *****************************
+# No `| default`: Helm's default fires on `false` too, so a deployment that turned this off got
+# `"true"` back. The chart's own values.yaml carries the `true`.
 - name: STRICT_TOKEN
-  value: {{ .Values.global.environments.strictToken | default "true" | quote }}
+  value: {{ .Values.global.environments.strictToken | quote }}
 - name: UID
   value: {{ .Values.global.environments.uid | quote }}
 - name: CID
@@ -188,6 +303,37 @@ Create the environments variable
   value: {{ .Values.global.environments.frontend.baseUrl | default "https://lnd.landau.app" | quote }}
 - name: CLIENT_ASSETS_URL
   value: {{ .Values.global.environments.frontend.assetsUrl | default "https://assets.lnd.landau.app" | quote }}
+{{- with .Values.global.environments.altcha }}
+# **********************
+# Captcha Services
+# **********************
+# Altcha (its HMAC key comes from the secret above)
+- name: ALTCHA_MAX_NUMBER
+  value: {{ .maxNumber | default "100000" | quote }}
+{{- end }}
+{{- with .Values.global.environments.vapid }}
+{{- with .publicKey }}
+# **********************
+# Push Information
+# **********************
+# VAPID (its private key comes from the secret above)
+- name: VAPID_PUBLIC_KEY
+  value: {{ . | quote }}
+{{- end }}
+{{- end }}
+{{- with .Values.global.environments.mail }}
+# **********************
+# Mail Identities
+# **********************
+{{- with .noReply }}
+- name: NO_REPLY_MAIL
+  value: {{ . | quote }}
+{{- end }}
+{{- with .support }}
+- name: SUPPORT_MAIL
+  value: {{ . | quote }}
+{{- end }}
+{{- end }}
 # **********************
 # Logging Services
 # **********************
