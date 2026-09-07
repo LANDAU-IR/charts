@@ -11,9 +11,15 @@ service:
   port: 80
   targetPort: 6150
 
+# **Liveness asks whether the process is alive, and nothing else — so it is a TCP check.**
+# `/status` is composite (`HealthModule.forRoot(['redis','nats','service','platform'])`) and answers
+# 503 when any of those is down, so using it here restarted every pod whenever Redis, NATS, the
+# platform or lnd-services blipped. A restart cures none of them, and turned a partial outage into a
+# CrashLoop of the component that was still healthy. A socket that accepts a connection is the most
+# this chart can ask without a shallow health route in the app; readiness keeps `/status`, where a
+# dead dependency correctly takes the pod out of the Service's endpoints.
 livenessProbe:
-  httpGet:
-    path: /status
+  tcpSocket:
     port: http
   initialDelaySeconds: 30
   periodSeconds: 10
@@ -29,6 +35,44 @@ readinessProbe:
 
 ingress:
   enabled: false
+
+# **********************
+# Workload hardening
+# **********************
+# Requests are what the scheduler reserves; without them every pod here was BestEffort QoS and so
+# the first evicted under node pressure. A memory *limit* is set because a Node heap that runs away
+# should be killed rather than take the node with it; a CPU limit deliberately is **not** — CFS
+# throttling on a latency-sensitive service is worse than the burst it prevents.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 1Gi
+
+# The subset that is safe whatever the image does. `runAsNonRoot`/`runAsUser` are **not** here on
+# purpose: both images build `FROM wenex/node:22-base` (itself `node:22-alpine`) with
+# `WORKDIR /app`, `COPY . .` and no `USER`, so they run as root and own /app as root — defaulting to UID 1000 would fail to
+# start. Enabling it is a Dockerfile change first. `readOnlyRootFilesystem` likewise needs a
+# writable /tmp mounted as an emptyDir before it can be turned on.
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+# With replicaCount 3 and no budget, a drain could take all three at once.
+#
+# **`maxUnavailable`, not `minAvailable`.** `minAvailable: 1` looks like the safer guarantee and is
+# the classic footgun: at `replicaCount: 1` — a staging install, a trimmed namespace, or autoscaling
+# with `minReplicas: 1` — it permits *zero* voluntary evictions, so `kubectl drain` hangs for ever
+# and a cluster upgrade stalls. `maxUnavailable: 1` degrades gracefully at any replica count.
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
 
 autoscaling:
   enabled: false
@@ -66,9 +110,18 @@ global:
   # Environment Variables
   # **********************
   environments:
-    debug: "clt:*"
+    # Namespaces for the `debug` package. Empty ships quiet: `clt:*` logs every request, which in
+    # production is both noise and a disclosure. The template emits nothing when this is empty.
+    debug: ""
     timeout: "90000"
-    nodeEnv: "develop"
+    # **`production`, and it is not cosmetic.** `NODE_ENV().IS_DEV` decides whether an HTTP error
+    # reply carries `stack` and `data` (all-exceptions.filter.ts), so `develop` — what this chart
+    # shipped until 2026-09-07 — returns stack traces to any caller that can provoke a 500.
+    #
+    # It also arms `apps/*/src/main.ts`'s production branch, which **throws at boot** unless
+    # `ELASTIC_APM_SERVICE_NAME` is set. Every deployment template here sets it per service, so the
+    # umbrella is safe as shipped; a values file that strips it will not boot.
+    nodeEnv: "production"
     # GraphQl mutation support
     graphqlMutationSupport: false
     # **********************
@@ -95,8 +148,14 @@ global:
     # The defaults below are ZarinPal's **sandbox**. A deployment that means to take real money
     # names the production `url` and `redirectUrl` explicitly and carries its own `merchantId`.
     zarinpal:
+      # **The sandbox host stays the default on purpose** — `zarinpal.env.ts` states the rule this
+      # chart follows: "a deployment that has not been given a merchant id must not silently take
+      # money, and a deployment that has one is naming the production URL explicitly". So taking
+      # real money is three deliberate values — `url`, `redirectUrl` and `merchantId` — never one.
       url: "https://sandbox.zarinpal.com/pg/v4"
-      merchantId: "514344e5-ef3c-4489-88f6-fde938292d18"
+      # Empty since 2026-09-07. This shipped a **working sandbox merchant id**, so an install that
+      # believed itself production processed fake payments that looked entirely successful.
+      merchantId: ""
       # A fallback the backend never reads today — `psp.callbackUrl` below is what the adapter is
       # handed per attempt. Kept in step with it on purpose: a value that disagreed would only be
       # here to mislead the next operator.
@@ -144,14 +203,16 @@ global:
       # How much settled-but-unreconciled POS money one shop may carry before further settles are
       # refused, in the smallest currency unit.
       posUnreconciledCeiling: "5000000000"
+      # Whether the swipe moves the money, or only records the acquirer's reference for the shop to
+      # reconcile later. `false` restores [decision 108] exactly. Added 2026-09-07 — the backend has
+      # read `ORDER_POS_AUTO_RECONCILE` since plan 82 and this chart did not carry it.
+      posAutoReconcile: true
     # **********************
     # Dispatch Config
     # **********************
     dispatch:
       # How far from a pickup a courier may be and still be offered the job.
       radiusKm: "50"
-      # The extra radius an oversize consignment is searched over.
-      oversizeKm: "4"
       # Great-circle kilometres are multiplied by this to price a real road route.
       detourFactor: "1.4"
       # How long one offer wave stands before the next widens.
@@ -160,6 +221,10 @@ global:
       positionTtlMinutes: "30"
       routingCosting: "auto"
       routingPool: "24"
+      # Whether a carrier must hold a funded guarantee before being offered a job. Fail-open,
+      # matching the backend's own default: with it off no candidate is dropped for want of cover.
+      # Added 2026-09-07 — the backend has read `DISPATCH_REQUIRE_GUARANTEE` since plan 84.
+      requireGuarantee: false
       # What a consignment is assumed to be when the shop declares nothing.
       default:
         weightKg: "5"
@@ -229,7 +294,9 @@ global:
     sentry:
       dsn: ""
       maxBreadcrumbs: "100"
-      tracesSampleRate: "0.8"
+      # 0.8 traces four in five requests, which is a development figure; the frontend subchart's
+      # own template already defaults to 0.1.
+      tracesSampleRate: "0.1"
     # **********************
     # Storage Services
     # **********************
@@ -252,8 +319,11 @@ global:
     # **********************
     # Nats
     nats:
-      user: "lnd"
-      pass: "lnd"
+      # Empty since 2026-09-07: `lnd`/`lnd` was a credential committed to git. Both halves are
+      # emitted only when set, so empty defers to the app's own fallback rather than overriding it
+      # with `""`. A real deployment supplies both.
+      user: ""
+      pass: ""
       timeout: "90000"
       servers: "nats://nats.nats.svc.cluster.local:4222"
     # **********************

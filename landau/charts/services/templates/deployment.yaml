@@ -13,10 +13,14 @@ spec:
       {{- include "services.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        # Env from secretKeyRef is injected at pod start, so a rotated or corrected secret reaches
+        # nothing already running. This rolls the pods when — and only when — the resolved secret
+        # actually changes.
+        checksum/secret: {{ include "lnd.secrets.checksumSource" . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "services.labels" . | nindent 8 }}
         {{- with .Values.podLabels }}

@@ -132,6 +132,10 @@ Create the environments variable
 # *****************************
 # OSM Services
 # *****************************
-- name: NUXT_PUBLIC_MAPTILE_SERVER_PATH
-  value: {{ .Values.environments.nuxt.public.mapTileServerPath | default "https://tile.openstreetmap.org/{z}/{x}/{y}.png" | quote }}
+# `MAP_TILE_URL`, not `MAPTILE_SERVER_PATH`. Nitro applies a runtime override only under the name
+# Nuxt derives from the runtimeConfig key (`mapTileUrl`), so the old spelling set a variable the app
+# never read and every pod served the OpenStreetMap default whatever this value said. Renamed in
+# `lnd-frontend`'s nuxt.config.ts and .env.example on the same day; the three must agree.
+- name: NUXT_PUBLIC_MAP_TILE_URL
+  value: {{ .Values.environments.nuxt.public.mapTileUrl | default "https://tile.openstreetmap.org/{z}/{x}/{y}.png" | quote }}
 {{- end }}

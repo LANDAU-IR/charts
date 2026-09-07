@@ -1,0 +1,22 @@
+{{- if and .Values.podDisruptionBudget .Values.podDisruptionBudget.enabled }}
+{{/*
+Without a budget a node drain can take every replica at once — replicaCount is 3, so the cost of
+not having one is the whole component. `minAvailable` rather than `maxUnavailable` so the guarantee
+survives a later change to the replica count.
+*/}}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "frontend.fullname" . }}
+  labels:
+    {{- include "frontend.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  {{- else if .Values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "frontend.selectorLabels" . | nindent 6 }}
+{{- end }}
