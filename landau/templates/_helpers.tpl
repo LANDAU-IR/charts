@@ -333,6 +333,20 @@ Create the environments variable
   value: {{ .Values.global.environments.market.sellerFloor | quote }}
 {{- end }}
 {{- end }}
+{{- if .Values.global.environments.mirror }}
+# **********************
+# Mirror Config
+# **********************
+# The CDC mirror's own bookkeeping (backend plan 105). Bare, guarded — see the Order block for why.
+{{- if not (kindIs "invalid" .Values.global.environments.mirror.maxAttempts) }}
+- name: CQRS_MAX_ATTEMPTS
+  value: {{ .Values.global.environments.mirror.maxAttempts | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .Values.global.environments.mirror.lagThresholdMs) }}
+- name: CQRS_LAG_THRESHOLD_MS
+  value: {{ .Values.global.environments.mirror.lagThresholdMs | quote }}
+{{- end }}
+{{- end }}
 # *****************************
 # Client Config
 # *****************************

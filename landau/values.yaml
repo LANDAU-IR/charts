@@ -213,6 +213,13 @@ global:
       # How many distinct sellers a part needs before its market figures are published at all.
       # The backend has its own absolute floor beneath this; a lower number never switches it off.
       sellerFloor: "5"
+    mirror:
+      # How many times the workers try to apply one CDC message before recording it dead and
+      # acknowledging it — the acknowledgement is what stops the platform retrying it for ever.
+      maxAttempts: "3"
+      # How late (ms) the last applied message may be before the workers' /status reports the
+      # mirror down.
+      lagThresholdMs: "60000"
     # **********************
     # Client Config
     # **********************
