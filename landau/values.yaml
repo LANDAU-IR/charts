@@ -142,16 +142,30 @@ global:
       # no terminals says so here *and* there.
       posEnabled: true
       # How much settled-but-unreconciled POS money one shop may carry before further settles are
-      # refused, in the smallest currency unit.
+      # refused, in the smallest currency unit. `0` disables the ceiling.
       posUnreconciledCeiling: "5000000000"
+      # Whether a cleared swipe confirms its order and moves the money on its own. `false` sends
+      # every POS sale to an admin's reconcile queue instead — the settle still succeeds, only the
+      # money waits.
+      posAutoReconcile: true
+      # Above this invoiced amount a consumer POS sale always waits for an admin, in the smallest
+      # currency unit. `0` disables the threshold. The wholesale counter has its own, below.
+      posManualAbove: "50000000"
+      # A shop's first settles wait for an admin until it has taken this many *and* been taking
+      # cards this many days, whichever ends later. `0` disables each.
+      posProbationSettles: "10"
+      posProbationDays: "30"
+      # How many distinct swipes one terminal may report inside a rolling window of this many
+      # minutes. Off while either is `0` (the shipped default): a rate bound wants a deployment's
+      # own measured traffic behind it.
+      posVelocityMax: "0"
+      posVelocityWindowMinutes: "0"
     # **********************
     # Dispatch Config
     # **********************
     dispatch:
       # How far from a pickup a courier may be and still be offered the job.
       radiusKm: "50"
-      # The extra radius an oversize consignment is searched over.
-      oversizeKm: "4"
       # Great-circle kilometres are multiplied by this to price a real road route.
       detourFactor: "1.4"
       # How long one offer wave stands before the next widens.
@@ -166,6 +180,10 @@ global:
         widthCm: "30"
         heightCm: "30"
         lengthCm: "30"
+      # Whether a load's value narrows the candidate pool to carriers whose guarantee covers it.
+      # Off by default, on purpose: turned on before the carriers have funded, it empties the pool
+      # on the deploy and reads as a dispatch outage. Forgetting this flag leaves deliveries happening.
+      requireGuarantee: false
     # **********************
     # Operations Config
     # **********************
@@ -179,6 +197,22 @@ global:
     # Payment terms for a distributor who has never declared its own.
     wholesale:
       restockTermsDays: "30"
+      # How long a restock payment is held before it is released to the distributor, so the goods
+      # can arrive first. `0` makes every hold fall due the moment its second event lands.
+      restockEscrowDays: "14"
+      # The card terminal at the distributor's counter. Off by default: a deployment that has placed
+      # no warehouse terminals must not show every counter a button that always fails.
+      restockPosEnabled: false
+      # Above this invoiced amount a counter payment always waits for an admin — an order of
+      # magnitude above the consumer threshold, because a restock invoice routinely is.
+      restockPosManualAbove: "500000000"
+    # **********************
+    # Market Config
+    # **********************
+    market:
+      # How many distinct sellers a part needs before its market figures are published at all.
+      # The backend has its own absolute floor beneath this; a lower number never switches it off.
+      sellerFloor: "5"
     # **********************
     # Client Config
     # **********************

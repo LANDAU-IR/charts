@@ -65,8 +65,8 @@ Create the name of the service account to use
 Create the environments variable
 */}}
 {{- define "frontend.environments" -}}
-- name: APP_VERSION
-  value: {{ .Values.image.tag | quote }}
+# Only what `nuxt.config.ts` → `runtimeConfig.public` reads: Nuxt exposes nothing else, so a name
+# shipped here with no key there is dead on arrival, and a key there with no name here cannot be set.
 - name: NUXT_PUBLIC_APP_VERSION
   value: {{ .Values.image.tag | quote }}
 # *****************************
@@ -86,13 +86,6 @@ Create the environments variable
 # *****************************
 - name: NUXT_PUBLIC_ALTCHA_CHALLENGE_URL
   value: {{ .Values.environments.nuxt.public.altcha.challengeUrl | default "https://api.lnd.landau.app/challenge" | quote }}
-# *****************************
-# Client Information
-# *****************************
-- name: NUXT_PUBLIC_APP_ID
-  value: {{ .Values.environments.nuxt.public.appId | quote }}
-- name: NUXT_PUBLIC_CLIENT_ID
-  value: {{ .Values.environments.nuxt.public.clientId | quote }}
 # MQTT Over WebSocket
 - name: NUXT_PUBLIC_MQTT_WS_URL
   value: {{ .Values.environments.nuxt.public.mqttWsUrl | default "ws://emqx.wenex.org/mqtt" | quote }}
@@ -105,29 +98,6 @@ Create the environments variable
   value: {{ .enabled | quote }}
 - name: NUXT_PUBLIC_POS_BRIDGE_URL
   value: {{ .bridgeUrl | quote }}
-{{- end }}
-# *****************************
-# Logging Services
-# *****************************
-- name: SENTRY_URL
-  value: {{ .Values.environments.nuxt.public.sentry.url | quote }}
-- name: SENTRY_AUTH_TOKEN
-  value: {{ .Values.environments.nuxt.public.sentry.authToken | quote }}
-- name: NUXT_PUBLIC_SENTRY_DSN
-  value: {{ .Values.environments.nuxt.public.sentry.dsn | quote }}
-- name: NUXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE
-  value: {{ .Values.environments.nuxt.public.sentry.tracesSampleRate | default "0.1" | quote }}
-{{- if .Values.environments.nuxt.public.google }}
-# *****************************
-# OAuth Information
-# *****************************
-# Google
-- name: NUXT_PUBLIC_GOOGLE_SCOPE
-  value: {{ .Values.environments.nuxt.public.google.client.scope | default "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile" | quote }}
-- name: NUXT_PUBLIC_GOOGLE_CLIENT_ID
-  value: {{ .Values.environments.nuxt.public.google.client.id | quote }}
-- name: NUXT_PUBLIC_GOOGLE_REDIRECT_URI
-  value: {{ .Values.environments.nuxt.public.google.client.redirectUri | quote }}
 {{- end }}
 # *****************************
 # OSM Services

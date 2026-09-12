@@ -27,12 +27,6 @@ autoscaling:
 environments:
   nuxt:
     # *****************************
-    # Logging Services
-    # *****************************
-    sentry:
-      url: ""
-      authToken: ""
-    # *****************************
     # Public Information
     # *****************************
     public:
@@ -50,11 +44,6 @@ environments:
       # *****************************
       altcha:
         challengeUrl: "https://api.landau.ir/challenge"
-      # *****************************
-      # Client Information
-      # *****************************
-      appId: ""
-      clientId: ""
       # MQTT Over WebSocket
       mqttWsUrl: "wss://emqx.wenex.org/mqtt"
       # *****************************
@@ -78,21 +67,6 @@ environments:
         # value serves every shop. Empty it only where no terminal is placed, and then set
         # `enabled: false` too.
         bridgeUrl: "http://127.0.0.1:4373"
-      # *****************************
-      # Logging Services
-      # *****************************
-      sentry:
-        dsn: ""
-        tracesSampleRate: "0.8"
-      # *****************************
-      # OAuth Information
-      # *****************************
-      # Google
-      google:
-        client:
-          id: ""
-          scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile"
-          redirectUri: "https://landau.ir/oauth"
       # *****************************
       # OSM Services
       # *****************************

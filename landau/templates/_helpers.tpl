@@ -206,6 +206,7 @@ Create the environments variable
 # Landau Config
 # **********************
 {{- if .Values.global.environments.landau }}
+# env-gate: unread — no reader in any Landau repo; left in place pending a deliberate removal
 - name: LANDAU_USER_ID
   value: {{ .Values.global.environments.landau.userId | quote }}
 {{- end }}
@@ -222,8 +223,42 @@ Create the environments variable
 # Must agree with the frontend's NUXT_PUBLIC_POS_ENABLED, or a button is offered and refused.
 - name: ORDER_POS_ENABLED
   value: {{ .Values.global.environments.order.posEnabled | quote }}
+# The POS numbers and flags below render bare, like STRICT_TOKEN: `0` is a meaningful setting for
+# each number ("disabled", by the backend's own rule) and `| default` fires on `0` exactly as it
+# fires on `false`, handing the shipped value back to an operator who turned the control off. Their
+# defaults live in values.yaml. The `kindIs "invalid"` guards cover the other trap: a key set to
+# `null` is deleted by Helm's merge and a bare render of it is `""`, which the app reads as `0` (or
+# `false`) — the guard emits nothing instead, so the app's own compiled default applies.
+{{- with .Values.global.environments.order }}
+{{- if not (kindIs "invalid" .posUnreconciledCeiling) }}
 - name: ORDER_POS_UNRECONCILED_CEILING
-  value: {{ .Values.global.environments.order.posUnreconciledCeiling | default "5000000000" | quote }}
+  value: {{ .posUnreconciledCeiling | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .posAutoReconcile) }}
+- name: ORDER_POS_AUTO_RECONCILE
+  value: {{ .posAutoReconcile | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .posManualAbove) }}
+- name: ORDER_POS_MANUAL_ABOVE
+  value: {{ .posManualAbove | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .posProbationSettles) }}
+- name: ORDER_POS_PROBATION_SETTLES
+  value: {{ .posProbationSettles | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .posProbationDays) }}
+- name: ORDER_POS_PROBATION_DAYS
+  value: {{ .posProbationDays | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .posVelocityMax) }}
+- name: ORDER_POS_VELOCITY_MAX
+  value: {{ .posVelocityMax | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .posVelocityWindowMinutes) }}
+- name: ORDER_POS_VELOCITY_WINDOW_MINUTES
+  value: {{ .posVelocityWindowMinutes | quote }}
+{{- end }}
+{{- end }}
 {{- end }}
 {{- if .Values.global.environments.dispatch }}
 # **********************
@@ -231,8 +266,6 @@ Create the environments variable
 # **********************
 - name: DISPATCH_RADIUS_KM
   value: {{ .Values.global.environments.dispatch.radiusKm | default "50" | quote }}
-- name: DISPATCH_OVERSIZE_KM
-  value: {{ .Values.global.environments.dispatch.oversizeKm | default "4" | quote }}
 - name: DISPATCH_DETOUR_FACTOR
   value: {{ .Values.global.environments.dispatch.detourFactor | default "1.4" | quote }}
 - name: DISPATCH_WAVE_MINUTES
@@ -253,6 +286,11 @@ Create the environments variable
 - name: DISPATCH_DEFAULT_LENGTH_CM
   value: {{ .lengthCm | default "30" | quote }}
 {{- end }}
+# Bare, guarded — see the Order block for why.
+{{- if not (kindIs "invalid" .Values.global.environments.dispatch.requireGuarantee) }}
+- name: DISPATCH_REQUIRE_GUARANTEE
+  value: {{ .Values.global.environments.dispatch.requireGuarantee | quote }}
+{{- end }}
 {{- end }}
 {{- if .Values.global.environments.operations }}
 # **********************
@@ -269,6 +307,31 @@ Create the environments variable
 # **********************
 - name: RESTOCK_TERMS_DAYS
   value: {{ .Values.global.environments.wholesale.restockTermsDays | default "30" | quote }}
+# Bare, guarded — see the Order block for why. `0` escrow days makes every hold fall due at once.
+{{- with .Values.global.environments.wholesale }}
+{{- if not (kindIs "invalid" .restockEscrowDays) }}
+- name: RESTOCK_ESCROW_DAYS
+  value: {{ .restockEscrowDays | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .restockPosEnabled) }}
+- name: RESTOCK_POS_ENABLED
+  value: {{ .restockPosEnabled | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .restockPosManualAbove) }}
+- name: RESTOCK_POS_MANUAL_ABOVE
+  value: {{ .restockPosManualAbove | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.global.environments.market }}
+# **********************
+# Market Config
+# **********************
+# Bare, guarded — see the Order block for why.
+{{- if not (kindIs "invalid" .Values.global.environments.market.sellerFloor) }}
+- name: MARKET_SELLER_FLOOR
+  value: {{ .Values.global.environments.market.sellerFloor | quote }}
+{{- end }}
 {{- end }}
 # *****************************
 # Client Config
