@@ -43,14 +43,17 @@ global:
   # Secrets
   # **********************
   secrets:
-    aes: "" # default: random 64 chars
+    # `aes`, `altcha.hmacKey` and `psp.secret` left empty are minted (random 64 chars) on the first
+    # install and carried forward on every upgrade — templates/secret.yaml reads the stored Secret
+    # before it mints. A value set here wins over the stored one, and stays once set.
+    aes: ""
     altcha:
-      hmacKey: "" # default: random 64 chars
+      hmacKey: ""
     # The HMAC key the PSP callback's own signature is checked against. ZarinPal signs nothing on
     # the way back, so this is the only thing that tells a genuine return from a typed one, and the
     # backend refuses to boot on the placeholders the repository ships.
     psp:
-      secret: "" # default: random 64 chars
+      secret: ""
     # Web-push keypair. Deliberately **not** generated: a random string is not a valid VAPID key,
     # and the backend's own fallback pair is committed, hence public. Mint one with
     # `npx web-push generate-vapid-keys` and set both halves — the public one under

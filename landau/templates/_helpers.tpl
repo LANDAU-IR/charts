@@ -130,6 +130,26 @@ Create the secrets variable
 {{- end }}
 
 {{/*
+One key of lnd-secrets, base64-encoded: the operator's value, else the value the cluster already
+holds, else a fresh mint. `randAlphaNum` runs on every render, so without the middle step every
+`helm upgrade` that left a value unset re-minted the key — a re-minted AES_KEY makes everything
+encrypted under the old one unreadable and a re-minted PSP_SECRET fails every callback still in
+flight, with the upgrade reporting success. A key the stored Secret lacks is minted once, not
+refused: an install older than 1.0.5 has no PSP_SECRET, and refusing would block its upgrade.
+Takes a dict: `key`, `value`, and `prior` (the stored Secret's `.data`, or an empty dict).
+*/}}
+{{- define "lnd.secrets.resolve" -}}
+{{- $v := .value | default "" | toString }}
+{{- if $v }}
+{{- $v | b64enc }}
+{{- else if index .prior .key }}
+{{- index .prior .key }}
+{{- else }}
+{{- randAlphaNum 16 | sha256sum | trunc 64 | b64enc }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the environments variable
 */}}
 {{- define "lnd.global.environments" -}}
@@ -144,8 +164,10 @@ Create the environments variable
   value: {{ .Values.global.environments.debug | default "clt:*" | quote }}
 - name: TIMEOUT
   value: {{ .Values.global.environments.timeout | default "90000" | quote }}
+{{- if not (kindIs "invalid" .Values.global.environments.graphqlMutationSupport) }}
 - name: GRAPHQL_MUTATION_SUPPORT
   value: {{ .Values.global.environments.graphqlMutationSupport | quote }}
+{{- end }}
 # **********************
 # Internationalization
 # **********************
@@ -191,8 +213,10 @@ Create the environments variable
 # **********************
 - name: PSP_PROVIDER
   value: {{ .Values.global.environments.psp.provider | default "zarinpal" | quote }}
+{{- if not (kindIs "invalid" .Values.global.environments.psp.allowFake) }}
 - name: PSP_ALLOW_FAKE
   value: {{ .Values.global.environments.psp.allowFake | quote }}
+{{- end }}
 {{- with .Values.global.environments.psp.merchantId }}
 - name: PSP_MERCHANT_ID
   value: {{ . | quote }}
@@ -218,17 +242,24 @@ Create the environments variable
   value: {{ .Values.global.environments.order.autoRejectHours | default "48" | quote }}
 - name: ORDER_DISPUTE_WINDOW_DAYS
   value: {{ .Values.global.environments.order.disputeWindowDays | default "7" | quote }}
+{{- if not (kindIs "invalid" .Values.global.environments.order.selfSupplyAutoConfirm) }}
 - name: ORDER_SELF_SUPPLY_AUTO_CONFIRM
   value: {{ .Values.global.environments.order.selfSupplyAutoConfirm | quote }}
+{{- end }}
 # Must agree with the frontend's NUXT_PUBLIC_POS_ENABLED, or a button is offered and refused.
+{{- if not (kindIs "invalid" .Values.global.environments.order.posEnabled) }}
 - name: ORDER_POS_ENABLED
   value: {{ .Values.global.environments.order.posEnabled | quote }}
+{{- end }}
 # The POS numbers and flags below render bare, like STRICT_TOKEN: `0` is a meaningful setting for
 # each number ("disabled", by the backend's own rule) and `| default` fires on `0` exactly as it
 # fires on `false`, handing the shipped value back to an operator who turned the control off. Their
 # defaults live in values.yaml. The `kindIs "invalid"` guards cover the other trap: a key set to
 # `null` is deleted by Helm's merge and a bare render of it is `""`, which the app reads as `0` (or
-# `false`) — the guard emits nothing instead, so the app's own compiled default applies.
+# `false`) — the guard emits nothing instead. How far the deletion reaches is Helm's, not ours: it
+# holds in the gateway's own render, but a subchart's `global` is refilled from this chart's
+# values.yaml, and with any subchart enabled a *nested* nulled key (`order.*`, `psp.*`) comes back in
+# the gateway too — so those pods get the chart default. Never `""`, which is the trap the guard is for.
 {{- with .Values.global.environments.order }}
 {{- if not (kindIs "invalid" .posUnreconciledCeiling) }}
 - name: ORDER_POS_UNRECONCILED_CEILING
@@ -352,8 +383,10 @@ Create the environments variable
 # *****************************
 # No `| default`: Helm's default fires on `false` too, so a deployment that turned this off got
 # `"true"` back. The chart's own values.yaml carries the `true`.
+{{- if not (kindIs "invalid" .Values.global.environments.strictToken) }}
 - name: STRICT_TOKEN
   value: {{ .Values.global.environments.strictToken | quote }}
+{{- end }}
 - name: UID
   value: {{ .Values.global.environments.uid | quote }}
 - name: CID
