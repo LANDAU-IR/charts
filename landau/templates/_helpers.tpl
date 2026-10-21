@@ -242,6 +242,16 @@ Create the environments variable
   value: {{ .Values.global.environments.order.autoRejectHours | default "48" | quote }}
 - name: ORDER_DISPUTE_WINDOW_DAYS
   value: {{ .Values.global.environments.order.disputeWindowDays | default "7" | quote }}
+# Decision 172: `0` is a setting (disputable at once), so the value renders bare and takes its default from values.yaml;
+# a key an operator deletes emits nothing and the app's own 72 applies.
+{{- if not (kindIs "invalid" .Values.global.environments.order.selfTransportDisputeHours) }}
+- name: ORDER_SELF_TRANSPORT_DISPUTE_HOURS
+  value: {{ .Values.global.environments.order.selfTransportDisputeHours | quote }}
+{{- end }}
+# Plan 118 (LND-222): a money transition's claim goes stale after this many seconds. `0` is not a setting the app
+# accepts (it falls back to 120), so `default` is safe here.
+- name: ORDER_TRANSITION_CLAIM_STALE_SECONDS
+  value: {{ .Values.global.environments.order.transitionClaimStaleSeconds | default "120" | quote }}
 {{- if not (kindIs "invalid" .Values.global.environments.order.selfSupplyAutoConfirm) }}
 - name: ORDER_SELF_SUPPLY_AUTO_CONFIRM
   value: {{ .Values.global.environments.order.selfSupplyAutoConfirm | quote }}

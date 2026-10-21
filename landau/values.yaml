@@ -137,6 +137,12 @@ global:
       autoRejectHours: "48"
       # How long after delivery a buyer may still raise a dispute.
       disputeWindowDays: "7"
+      # How long an order the courier side gave up on (SELF_TRANSPORT_REQUIRED) waits before it may be disputed,
+      # in hours (decision 172). `0` makes it disputable at once.
+      selfTransportDisputeHours: "72"
+      # How long a money transition's claim on an order holds before another caller may take it over, in seconds
+      # (plan 118). A transition finishes in seconds; a claim this old belongs to a process that died mid-way.
+      transitionClaimStaleSeconds: "120"
       # A shop's order against its own stock confirms itself; `false` restores the manual step.
       selfSupplyAutoConfirm: true
       # The in-shop card terminal. **Must match `frontend.environments.nuxt.public.posEnabled`**:
