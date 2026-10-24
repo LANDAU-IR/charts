@@ -431,6 +431,25 @@ Create the environments variable
 - name: ALTCHA_MAX_NUMBER
   value: {{ .maxNumber | default "100000" | quote }}
 {{- end }}
+{{- with .Values.global.environments.throttle }}
+# **********************
+# Public Route Rate Limit
+# **********************
+# Plan 123.1: every route that needs no session is limited per client address, per gateway replica. `0` is not a
+# setting the app accepts (it keeps its default), so `default` is safe; `int64` keeps a large window out of `1e+06`.
+- name: PUBLIC_RATE_TTL_MS
+  value: {{ .ttlMs | default "60000" | int64 | quote }}
+- name: PUBLIC_RATE_LIMIT
+  value: {{ .limit | default "120" | int64 | quote }}
+- name: PUBLIC_CONTACT_RATE_LIMIT
+  value: {{ .contactLimit | default "5" | int64 | quote }}
+# How many proxies append to X-Forwarded-For in front of the gateway. `0` is a setting (nothing in front: key on the
+# socket), so it renders bare and takes its default from values.yaml; a deleted key emits nothing and the app's 1 applies.
+{{- if not (kindIs "invalid" .proxyHops) }}
+- name: PUBLIC_RATE_PROXY_HOPS
+  value: {{ .proxyHops | int64 | quote }}
+{{- end }}
+{{- end }}
 {{- with .Values.global.environments.vapid }}
 {{- with .publicKey }}
 # **********************

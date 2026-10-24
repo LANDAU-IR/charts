@@ -259,6 +259,22 @@ global:
     altcha:
       maxNumber: "100000"
     # **********************
+    # Public Route Rate Limit
+    # **********************
+    # Plan 123.1: requests per client address per window on every route that needs no session (the public catalogue,
+    # the direct-sale contact route, the pay link and its checkout), counted per gateway replica. The PSP callbacks
+    # are exempt in code. `0` or an unreadable value keeps the default — none of these can turn the limit off.
+    throttle:
+      # The window, in milliseconds.
+      ttlMs: "60000"
+      # Requests per address per window; past it the route answers 429.
+      limit: "120"
+      # The same for the two routes that send a one-time code by SMS (`/shopping/direct/contact`, `/-/auth/otp`).
+      contactLimit: "5"
+      # How many proxies stand in front of the gateway and append to X-Forwarded-For: the ingress alone is 1, a CDN in
+      # front of it 2. The client is that many entries from the right; 0 keys on the socket (nothing in front).
+      proxyHops: 1
+    # **********************
     # Push Information
     # **********************
     # VAPID — the public half only, and the same value the frontend chart serves to the browser.
