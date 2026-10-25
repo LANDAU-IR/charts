@@ -99,6 +99,10 @@ Create the environments variable
 - name: NUXT_PUBLIC_POS_BRIDGE_URL
   value: {{ .bridgeUrl | quote }}
 {{- end }}
+# Decision 188: the legal pages are published only once their copy is approved. Bare, never `| default`:
+# `default` fires on `false`, which is this flag's own default and its whole point.
+- name: NUXT_PUBLIC_LEGAL_APPROVED
+  value: {{ .Values.environments.nuxt.public.legalApproved | quote }}
 # *****************************
 # OSM Services
 # *****************************

@@ -67,6 +67,11 @@ environments:
         # value serves every shop. Empty it only where no terminal is placed, and then set
         # `enabled: false` too.
         bridgeUrl: "http://127.0.0.1:4373"
+      # The legal pages — terms, delivery and returns, privacy, about, contact (Landau plan 123.3, decision 188).
+      # Drafts until the product owner and counsel approve the copy, and an unapproved page is not published:
+      # `false` makes each answer the not-found page and keeps them out of the footer. `true` only with the
+      # approved copy deployed. Rendered bare, so a `false` here reaches the pod as `false`.
+      legalApproved: false
       # *****************************
       # OSM Services
       # *****************************
