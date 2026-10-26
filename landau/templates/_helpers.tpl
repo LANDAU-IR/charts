@@ -450,6 +450,15 @@ Create the environments variable
   value: {{ .proxyHops | int64 | quote }}
 {{- end }}
 {{- end }}
+{{- with .Values.global.environments.publicOffers }}
+# **********************
+# Public Catalogue
+# **********************
+# Plan 124.1: seconds one process keeps the 30-day sales count the landing row's best-selling order reads. `0` is not a
+# setting the app accepts (it keeps its default), so `default` is safe.
+- name: PUBLIC_OFFERS_SALES_TTL_SECONDS
+  value: {{ .salesTtlSeconds | default "300" | int64 | quote }}
+{{- end }}
 {{- with .Values.global.environments.vapid }}
 {{- with .publicKey }}
 # **********************

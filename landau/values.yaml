@@ -275,6 +275,13 @@ global:
       # front of it 2. The client is that many entries from the right; 0 keys on the socket (nothing in front).
       proxyHops: 1
     # **********************
+    # Public Catalogue
+    # **********************
+    # Plan 124.1: seconds one process keeps the 30-day sales count that `sort=best_selling` (the landing row) orders by —
+    # an aggregation over every customer order of the month, on an anonymous route. `0` or an unreadable value keeps 300.
+    publicOffers:
+      salesTtlSeconds: "300"
+    # **********************
     # Push Information
     # **********************
     # VAPID — the public half only, and the same value the frontend chart serves to the browser.
