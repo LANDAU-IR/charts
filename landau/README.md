@@ -17,12 +17,17 @@ Follow these steps to install the artifacts hub Helm chart package:
 
 ## Deploying for real
 
-The shipped defaults are safe rather than complete — a bare install runs against the ZarinPal
-**sandbox** and takes no real money. A production deployment names at least:
+The shipped defaults are safe rather than complete — a bare install runs against Zibal's
+**sandbox** (`psp.provider: zibal`, merchant `zibal`) and takes no real money. A production deployment
+names at least:
 
 | Value | Why |
 | --- | --- |
-| `global.environments.zarinpal.{url,redirectUrl,merchantId}` | All three together, or payments fail with `424`. The sandbox default is deliberate. |
+| `global.environments.zibal.merchant` | Zibal's live merchant, in the release's own values (or its secret store) — never committed. The sandbox default is deliberate. |
+| `global.environments.psp.callbackUrl` | On the domain registered for the gateway in Zibal's panel: a callback anywhere else is refused `106` and no payment opens. |
+| The frontend's own domain | Zibal's `/start` page needs a `Referer` from the registered site. The payer leaves from an `lnd-frontend` page, which sets no `Referrer-Policy`, so the browser sends its origin — keep it that way (`no-referrer` in front of the app stops every payment). |
+| The cluster's egress IP | Registered in Zibal's panel when the merchant is IP-restricted, or every call answers `115`. |
+| `global.environments.zarinpal.{url,redirectUrl,merchantId}` | Only with `psp.provider: zarinpal` — all three together, or payments fail with `424`. |
 | `global.environments.nats.{user,pass}` | No credential ships in this chart. |
 | `global.environments.mongo.pass`, `global.environments.redis.password` | Datastore credentials. |
 | `global.secrets.vapid.privateKey` + `global.environments.vapid.publicKey` | Both halves or neither; unset keeps the backend's committed dev pair. |

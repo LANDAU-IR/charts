@@ -49,9 +49,9 @@ global:
     aes: ""
     altcha:
       hmacKey: ""
-    # The HMAC key the PSP callback's own signature is checked against. ZarinPal signs nothing on
-    # the way back, so this is the only thing that tells a genuine return from a typed one, and the
-    # backend refuses to boot on the placeholders the repository ships.
+    # The HMAC key the PSP callback's own signature is checked against. Neither Zibal nor ZarinPal
+    # signs anything on the way back, so this is the only thing that tells a genuine return from a
+    # typed one, and the backend refuses to boot on the placeholders the repository ships.
     psp:
       secret: ""
     # Web-push keypair. Deliberately **not** generated: a random string is not a valid VAPID key,
@@ -106,18 +106,27 @@ global:
       callbackUrl: "https://api.landau.ir/shopping/payments/callback"
       redirectUrl: "https://sandbox.zarinpal.com/pg/StartPay/{}"
       timeoutMs: "20000"
+    # Zibal, the provider Landau runs on (decision 194). The defaults are its **sandbox**: the API host
+    # is the production one and `zibal` is Zibal's public test merchant, so a release takes real money
+    # only once it names the live `merchant` in its own values — never in this file. README → *Deploying
+    # for real* lists what else production needs (the registered domain, the `Referer`, the server IP).
+    zibal:
+      url: "https://gateway.zibal.ir/v1"
+      merchant: "zibal"
+      redirectUrl: "https://gateway.zibal.ir/start/{}"
+      timeoutMs: "20000"
     # **********************
     # PSP Config
     # **********************
-    # Which adapter answers, and where money comes back to. `zarinpal` is the real one; `dev` is the
-    # built-in fake, and selecting it also takes `allowFake: true` so it cannot be reached by
-    # omission — the fake verifies Landau's own payments with no bank in the loop. An unknown name
-    # refuses to boot rather than falling back.
+    # Which adapter answers, and where money comes back to. `zibal` is the provider (decision 194) and
+    # `zarinpal` the kept second real adapter; `dev` is the built-in fake, and selecting it also takes
+    # `allowFake: true` so it cannot be reached by omission — the fake verifies Landau's own payments
+    # with no bank in the loop. An unknown name refuses to boot rather than falling back.
     psp:
-      provider: "zarinpal"
+      provider: "zibal"
       allowFake: false
-      # Only for a provider that is not ZarinPal, which reads `zarinpal.merchantId` above. Empty
-      # leaves the backend's own default.
+      # Read by neither real provider — ZarinPal reads `zarinpal.merchantId`, Zibal `zibal.merchant`
+      # above. Empty leaves the backend's own default.
       merchantId: ""
       # Landau's own public callback route, on the gateway — not the frontend's. The wholesale
       # callback is derived from this one's origin, so there is nothing else to keep in step.

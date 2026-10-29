@@ -207,12 +207,23 @@ Create the environments variable
 - name: ZARINPAL_TIMEOUT_MS
   value: {{ .Values.global.environments.zarinpal.timeoutMs | default "20000" | quote }}
 {{- end }}
+{{- if .Values.global.environments.zibal }}
+# Zibal, the provider since decision 194; the live merchant belongs in a production release's own values
+- name: ZIBAL_URL
+  value: {{ .Values.global.environments.zibal.url | quote }}
+- name: ZIBAL_MERCHANT
+  value: {{ .Values.global.environments.zibal.merchant | quote }}
+- name: ZIBAL_REDIRECT_URL
+  value: {{ .Values.global.environments.zibal.redirectUrl | quote }}
+- name: ZIBAL_TIMEOUT_MS
+  value: {{ .Values.global.environments.zibal.timeoutMs | default "20000" | quote }}
+{{- end }}
 {{- if .Values.global.environments.psp }}
 # **********************
 # PSP (payment provider)
 # **********************
 - name: PSP_PROVIDER
-  value: {{ .Values.global.environments.psp.provider | default "zarinpal" | quote }}
+  value: {{ .Values.global.environments.psp.provider | default "zibal" | quote }}
 {{- if not (kindIs "invalid" .Values.global.environments.psp.allowFake) }}
 - name: PSP_ALLOW_FAKE
   value: {{ .Values.global.environments.psp.allowFake | quote }}
