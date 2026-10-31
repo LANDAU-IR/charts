@@ -41,8 +41,6 @@ spec:
           image: "{{ .Values.global.image.repository }}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           env:
-            - name: SERVICE_NAME
-              value: "workers"
             - name: OTLP_SERVICE_NAME
               value: "workers"
             - name: ELASTIC_APM_SERVICE_NAME

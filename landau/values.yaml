@@ -307,11 +307,18 @@ global:
     # **********************
     # Logging Services
     # **********************
-    # Sentry
+    # Sentry (Landau plan 127) — two keys of one backend project; README → Error reporting.
     sentry:
+      # The main key: every backend error event. Empty sends nothing but money incidents.
       dsn: ""
+      # The money key: money incidents and lock bypasses only, on a key with no rate limit, so a storm on the main
+      # key cannot drop one. Empty sends them on the main key, with a warning at boot.
+      moneyDsn: ""
+      # Empty reports under `nodeEnv`. The frontend subchart takes the same name unless given its own.
+      environment: ""
       maxBreadcrumbs: "100"
-      tracesSampleRate: "0.8"
+      # Minutes a money sweep may keep failing on one order before it is a `stuck` money incident.
+      stuckAfterMinutes: 60
     # **********************
     # Storage Services
     # **********************

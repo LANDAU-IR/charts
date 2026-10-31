@@ -3,6 +3,34 @@ entries:
   landau:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2026-10-31T16:08:42.157216656+03:30"
+    dependencies:
+    - condition: services.enabled
+      name: services
+      repository: file://charts/services
+      version: 1.0.1
+    - condition: workers.enabled
+      name: workers
+      repository: file://charts/workers
+      version: 1.0.1
+    - condition: assets.enabled
+      name: assets
+      repository: file://charts/assets
+      version: 1.0.0
+    - condition: frontend.enabled
+      name: frontend
+      repository: file://charts/frontend
+      version: 1.0.5
+    description: A Helm chart for Kubernetes
+    digest: efc96fea79283350580db9a272167f25a7de9c4fe7d776619e5060eeb13f4aa8
+    icon: https://avatars.githubusercontent.com/u/207422183?s=200&v=4
+    name: landau
+    type: application
+    urls:
+    - landau-1.0.14.tgz
+    version: 1.0.14
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2026-10-29T10:35:14.167934062+03:30"
     dependencies:
     - condition: services.enabled
@@ -393,4 +421,4 @@ entries:
     urls:
     - landau-1.0.0.tgz
     version: 1.0.0
-generated: "2026-10-29T10:35:14.166072087+03:30"
+generated: "2026-10-31T16:08:42.148675846+03:30"

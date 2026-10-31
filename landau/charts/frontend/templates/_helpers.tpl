@@ -108,4 +108,31 @@ Create the environments variable
 # *****************************
 - name: NUXT_PUBLIC_MAPTILE_SERVER_PATH
   value: {{ .Values.environments.nuxt.public.mapTileServerPath | default "https://tile.openstreetmap.org/{z}/{x}/{y}.png" | quote }}
+# *****************************
+# Error Reporting (Landau plan 127)
+# *****************************
+# An empty DSN turns the browser SDK off and changes nothing else.
+- name: NUXT_PUBLIC_SENTRY_DSN
+  value: {{ .Values.environments.nuxt.public.sentry.dsn | quote }}
+# The backend reports under SENTRY_ENVIRONMENT, else NODE_ENV; so does this, unless given its own name, so the two
+# halves of one trace land under one environment filter.
+{{- $global := dig "environments" (dict) (.Values.global | default (dict)) }}
+- name: NUXT_PUBLIC_SENTRY_ENVIRONMENT
+  value: {{ .Values.environments.nuxt.public.sentry.environment | default (dig "sentry" "environment" "" $global) | default $global.nodeEnv | default "develop" | quote }}
+# The rates render bare from values.yaml: `default` fires on the session rate's own 0, and an empty value would reach
+# the browser SDK as the string "" in place of the app's number.
+{{- with .Values.environments.nuxt.public.sentry }}
+{{- if not (kindIs "invalid" .tracesSampleRate) }}
+- name: NUXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE
+  value: {{ .tracesSampleRate | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .replaysSessionSampleRate) }}
+- name: NUXT_PUBLIC_SENTRY_REPLAYS_SESSION_SAMPLE_RATE
+  value: {{ .replaysSessionSampleRate | quote }}
+{{- end }}
+{{- if not (kindIs "invalid" .replaysOnErrorSampleRate) }}
+- name: NUXT_PUBLIC_SENTRY_REPLAYS_ON_ERROR_SAMPLE_RATE
+  value: {{ .replaysOnErrorSampleRate | quote }}
+{{- end }}
+{{- end }}
 {{- end }}

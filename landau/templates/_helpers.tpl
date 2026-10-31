@@ -496,13 +496,23 @@ Create the environments variable
 # **********************
 # Logging Services
 # **********************
-# Sentry
+# Sentry (Landau plan 127). An empty DSN turns that client off; an empty money DSN sends money incidents on the main
+# key with a boot warning. Backend tracing stays off in the app whatever the env says (APM owns it), so no sample rate
+# is shipped.
 - name: SENTRY_DSN
   value: {{ .Values.global.environments.sentry.dsn | quote }}
+- name: SENTRY_MONEY_DSN
+  value: {{ .Values.global.environments.sentry.moneyDsn | quote }}
+{{- with .Values.global.environments.sentry.environment }}
+- name: SENTRY_ENVIRONMENT
+  value: {{ . | quote }}
+{{- end }}
 - name: SENTRY_MAX_BREADCRUMBS
   value: {{ .Values.global.environments.sentry.maxBreadcrumbs | default "100" | quote }}
-- name: SENTRY_TRACES_SAMPLE_RATE
-  value: {{ .Values.global.environments.sentry.tracesSampleRate | default "0.8" | quote }}
+{{- if not (kindIs "invalid" .Values.global.environments.sentry.stuckAfterMinutes) }}
+- name: SENTRY_STUCK_AFTER_MINUTES
+  value: {{ .Values.global.environments.sentry.stuckAfterMinutes | int64 | quote }}
+{{- end }}
 # **********************
 # Storage Services
 # **********************

@@ -31,6 +31,7 @@ names at least:
 | `global.environments.nats.{user,pass}` | No credential ships in this chart. |
 | `global.environments.mongo.pass`, `global.environments.redis.password` | Datastore credentials. |
 | `global.secrets.vapid.privateKey` + `global.environments.vapid.publicKey` | Both halves or neither; unset keeps the backend's committed dev pair. |
+| `global.environments.sentry.{dsn,moneyDsn}`, `frontend.environments.nuxt.public.sentry.dsn` | Empty reports nothing. Keys, limits and alert rules: *Error reporting* below. |
 | `resources`, per subchart | The defaults are a starting point, not a sizing. |
 
 `AES_KEY`, `HMAC_KEY` and `PSP_SECRET` are minted on first install and carried forward on every
@@ -49,3 +50,48 @@ while the pods kept the key they started with, so the Secret may not hold the ke
 using. `1.0.8` freezes whatever the Secret holds. Before the upgrade, read the key the pods run —
 `kubectl exec deploy/lnd-services -- printenv AES_KEY` — and pass it as `global.secrets.aes` (same
 for `ALTCHA_HMAC_KEY` → `altcha.hmacKey`, `PSP_SECRET` → `psp.secret`); a supplied value wins and stays.
+
+## Error reporting (Sentry)
+
+Both apps report to a self-hosted Sentry, 25.9.0 or 26.10 (SDK 10.78.0; SDK 11 needs a server at 26.4.2 or later).
+Nothing is sent while a DSN is empty, and an unreachable server slows no request and no tick.
+
+**Keys.** Two projects and three client keys. Each key's rate limit is set on the server (the project's
+*Client Keys* → *Rate Limits*); review the limits after the first pilot week. Error events are never sampled, so
+the limit is the only volume control.
+
+| Value | Project and key | Starting limit | Carries |
+| --- | --- | --- | --- |
+| `global.environments.sentry.dsn` | backend, main | 300/min | every backend error, tagged `layer` (gateway, services, workers) |
+| `global.environments.sentry.moneyDsn` | backend, money | none | money incidents and lock bypasses only, so a storm that rate-limits the main key cannot drop one. Empty sends them on the main key, with a warning at boot |
+| `frontend.environments.nuxt.public.sentry.dsn` | frontend, its own | 300/min | browser errors and their masked replays. The key ships to every browser, so its limit is what bounds abuse |
+
+**Environment and release.** `global.environments.sentry.environment` names the environment of both apps; empty, it
+is `nodeEnv`. The frontend takes the same name unless `frontend.environments.nuxt.public.sentry.environment` sets its
+own, so the browser's half and the backend's half of one trace sit under one filter. The backend's release is
+`lnd-backend@<global.image.tag>`; the frontend's is baked into its image at build. Frames read against the source
+only for a build whose source maps its release pipeline uploaded; otherwise they point into the bundle.
+
+**Alert rules** (issue alerts, on the backend project unless named):
+
+- `money:true` — any event, immediately, to whoever settles money by hand. The event's `money` context names the
+  order, invoice or track id and the code `site`. Each one also leaves a JSON line `"event":"money_incident"` on the
+  pod's stderr, which is the record when the event itself is lost.
+- `lock:bypassed` — immediately. The operations tick ran without its Redis lock, which is a risk on the money halves.
+- `job:*` — on frequency. A sweep failing on one item sends one warning per hour, and an order a money sweep has
+  failed on for longer than `global.environments.sentry.stuckAfterMinutes` (60) becomes one `money:true` incident a day.
+- A new issue in a release — both projects, to the developers.
+
+**Server-side scrubbing** (*Security & Privacy*, both projects): *Data Scrubber* on, *Use Default Scrubbers* on,
+*Prevent Storing of IP Addresses* on, and the additional sensitive fields `phone, mobile, otp, code, sheba, card,
+national`. Both apps scrub before they send; these settings are the second net.
+
+**Replay.** The browser records only the sessions an error happens in (`replaysOnErrorSampleRate: 1.0`), with all
+text and inputs masked and media blocked, and never on `/pay/*`, `/reset-password`, `/register/confirm` or `/oauth`.
+Raise `replaysSessionSampleRate` above 0 only once the server has a retention period, deletes expired replay files
+physically, and alerts on Kafka lag and disk.
+
+**Upgrading from 1.0.13 or older:** `SENTRY_TRACES_SAMPLE_RATE` and `SERVICE_NAME` are no longer shipped; only the
+reporter in images before Landau plan 127 read them. Run 1.0.14 with an image that carries plan 127's backend: an
+older image under it traces every request if its DSN is set. Keep `global.environments.sentry.dsn` empty until such
+an image runs — the old reporter sent request headers, `authorization` among them.

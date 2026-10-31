@@ -76,3 +76,18 @@ environments:
       # OSM Services
       # *****************************
       mapTileServerPath: "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+      # *****************************
+      # Error Reporting (Landau plan 127) — the parent chart's README → Error reporting
+      # *****************************
+      sentry:
+        # The frontend project's own key. It ships to every browser, so its rate limit on the server is what bounds
+        # abuse. Empty turns reporting off.
+        dsn: ""
+        # Empty takes the backend's name: global.environments.sentry.environment, else global.environments.nodeEnv.
+        environment: ""
+        # Page loads traced, for Web Vitals on old phones.
+        tracesSampleRate: 0.1
+        # Whole sessions recorded. Keep 0 until the Sentry server's retention and replay deletion are in place.
+        replaysSessionSampleRate: 0
+        # Sessions recorded, masked, when an error happens in them.
+        replaysOnErrorSampleRate: 1.0
