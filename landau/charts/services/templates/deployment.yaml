@@ -41,6 +41,9 @@ spec:
           image: "{{ .Values.global.image.repository }}:{{ .Values.global.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           env:
+            # scripts/start.js picks the app by this name, and boots the gateway when it is unset.
+            - name: SERVICE_NAME
+              value: "services"
             - name: OTLP_SERVICE_NAME
               value: "services"
             - name: ELASTIC_APM_SERVICE_NAME

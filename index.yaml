@@ -3,7 +3,35 @@ entries:
   landau:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-31T16:08:42.157216656+03:30"
+    created: "2026-11-05T14:00:38.83171317+03:30"
+    dependencies:
+    - condition: services.enabled
+      name: services
+      repository: file://charts/services
+      version: 1.0.2
+    - condition: workers.enabled
+      name: workers
+      repository: file://charts/workers
+      version: 1.0.2
+    - condition: assets.enabled
+      name: assets
+      repository: file://charts/assets
+      version: 1.0.0
+    - condition: frontend.enabled
+      name: frontend
+      repository: file://charts/frontend
+      version: 1.0.5
+    description: A Helm chart for Kubernetes
+    digest: 2a4597a186299b093ae44e53a7ee949cfb144c3bd3ec74f7d07c996dbff8c429
+    icon: https://avatars.githubusercontent.com/u/207422183?s=200&v=4
+    name: landau
+    type: application
+    urls:
+    - landau-1.0.15.tgz
+    version: 1.0.15
+  - apiVersion: v2
+    appVersion: 1.0.0
+    created: "2026-11-05T14:00:38.830222112+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -31,7 +59,7 @@ entries:
     version: 1.0.14
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-29T10:35:14.167934062+03:30"
+    created: "2026-11-05T14:00:38.828536339+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -59,7 +87,7 @@ entries:
     version: 1.0.13
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-26T20:13:01.651812479+03:30"
+    created: "2026-11-05T14:00:38.826851339+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -87,7 +115,7 @@ entries:
     version: 1.0.12
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-25T05:44:27.342483+03:30"
+    created: "2026-11-05T14:00:38.824336086+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -115,7 +143,7 @@ entries:
     version: 1.0.11
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-24T22:38:35.590298+03:30"
+    created: "2026-11-05T14:00:38.822803973+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -143,7 +171,7 @@ entries:
     version: 1.0.10
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-10-20T16:48:47.540254592+03:30"
+    created: "2026-11-05T14:00:38.846641755+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -171,7 +199,7 @@ entries:
     version: 1.0.9
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.926353827+03:30"
+    created: "2026-11-05T14:00:38.845172024+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -199,7 +227,7 @@ entries:
     version: 1.0.8
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.924694441+03:30"
+    created: "2026-11-05T14:00:38.843627888+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -227,7 +255,7 @@ entries:
     version: 1.0.7
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.922727491+03:30"
+    created: "2026-11-05T14:00:38.841653416+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -255,7 +283,7 @@ entries:
     version: 1.0.6
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.921158888+03:30"
+    created: "2026-11-05T14:00:38.840243782+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -283,7 +311,7 @@ entries:
     version: 1.0.5
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.919790399+03:30"
+    created: "2026-11-05T14:00:38.838864081+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -311,7 +339,7 @@ entries:
     version: 1.0.4
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.918458271+03:30"
+    created: "2026-11-05T14:00:38.837659335+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -339,7 +367,7 @@ entries:
     version: 1.0.3
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.916889768+03:30"
+    created: "2026-11-05T14:00:38.836370571+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -367,7 +395,7 @@ entries:
     version: 1.0.2
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.915761766+03:30"
+    created: "2026-11-05T14:00:38.821144939+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -395,7 +423,7 @@ entries:
     version: 1.0.1
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2026-09-13T04:19:08.914603859+03:30"
+    created: "2026-11-05T14:00:38.818543902+03:30"
     dependencies:
     - condition: services.enabled
       name: services
@@ -421,4 +449,4 @@ entries:
     urls:
     - landau-1.0.0.tgz
     version: 1.0.0
-generated: "2026-10-31T16:08:42.148675846+03:30"
+generated: "2026-11-05T14:00:38.815584977+03:30"

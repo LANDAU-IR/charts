@@ -100,7 +100,11 @@ text and inputs masked and media blocked, and never on `/pay/*`, `/reset-passwor
 Raise `replaysSessionSampleRate` above 0 only once the server has a retention period, deletes expired replay files
 physically, and alerts on Kafka lag and disk.
 
-**Upgrading from 1.0.13 or older:** `SENTRY_TRACES_SAMPLE_RATE` and `SERVICE_NAME` are no longer shipped; only the
-reporter in images before Landau plan 127 read them. Run 1.0.14 with an image that carries plan 127's backend: an
-older image under it traces every request if its DSN is set. Keep `global.environments.sentry.dsn` empty until such
-an image runs — the old reporter sent request headers, `authorization` among them.
+**Upgrading from 1.0.13 or older:** `SENTRY_TRACES_SAMPLE_RATE` is no longer shipped; only the reporter in images
+before Landau plan 127 read it. Run this chart with an image that carries plan 127's backend: an older image under it
+traces every request if its DSN is set. Keep `global.environments.sentry.dsn` empty until such an image runs — the old
+reporter sent request headers, `authorization` among them.
+
+**Do not run 1.0.14; use 1.0.15 or newer.** 1.0.14 dropped `SERVICE_NAME`, which the image's `scripts/start.js` picks
+the app by. With it unset, `services` and `workers` boot the gateway on port 6150, their probes on port 80 fail, and
+the pods loop through `Received SIGTERM` and `CrashLoopBackOff`, each exit reading `Completed, 0` (LND-611).
