@@ -307,7 +307,7 @@ global:
     # **********************
     # Logging Services
     # **********************
-    # Sentry (Landau plan 127) — two keys of one backend project; README → Error reporting.
+    # Sentry (Landau plan 127) — the backend's two keys, each on its own project; README → Error reporting.
     sentry:
       # The main key: every backend error event. Empty sends nothing but money incidents.
       dsn: ""
